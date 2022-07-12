@@ -2,6 +2,8 @@
 
 <p align="center">Free WebRTC - SFU - Simple, Secure, Scalable Real-Time Video Conferences Up to 4k, compatible with all browsers and platforms.</p>
 
+<p align="center">This is a trimmed down version of MiroTalk, with some features stripped out for performance.</p>
+
 <hr />
 
 <p align="center">
