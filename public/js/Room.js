@@ -9,7 +9,7 @@ const swalImageUrl = '../images/pricing-illustration.svg';
 
 const url = {
     ipLookup: 'https://extreme-ip-lookup.com/json/?key=demo2',
-    survey: 'https://www.questionpro.com/t/AUs7VZq02P',
+    survey: '',
 };
 
 const _PEER = {
@@ -25,7 +25,7 @@ const _PEER = {
     sendVideo: '<i class="fab fa-youtube"></i>',
 };
 
-const surveyActive = true;
+const surveyActive = false;
 
 let participantsCount = 0;
 
@@ -320,6 +320,8 @@ function getPeerGeoLocation() {
 function whoAreYou() {
     console.log('04 ----> Who are you');
 
+  peer_name = "Guest User " + Math.floor(Math.random() * 1000 + "");
+
     if (peer_name) {
         checkMedia();
         getPeerInfo();
@@ -341,7 +343,7 @@ function whoAreYou() {
             <button id="initVideoButton" class="fas fa-video" onclick="handleVideo(event)"></button>
             <button id="initAudioVideoButton" class="fas fa-eye" onclick="handleAudioVideo(event)"></button>
         </div>`,
-        confirmButtonText: `Join meeting`,
+        confirmButtonText: `Join`,
         showClass: {
             popup: 'animate__animated animate__fadeInDown',
         },
@@ -435,7 +437,11 @@ async function shareRoom(useNavigator = false) {
     } else {
         share();
     }
-    function share() {
+  function share() {
+
+    // BNG Force share function off for now
+    return;
+
         sound('open');
 
         Swal.fire({
@@ -548,7 +554,7 @@ function joinRoom(peer_name, room_id) {
 function roomIsReady() {
     setTheme('dark');
     show(exitButton);
-    show(shareButton);
+    // show(shareButton);
     show(startRecButton);
     show(chatButton);
     show(chatSendButton);
@@ -585,14 +591,14 @@ function roomIsReady() {
     show(fileShareButton);
     show(participantsButton);
     show(lockRoomButton);
-    show(aboutButton);
+    // show(aboutButton);
     handleButtons();
     handleSelects();
     handleInputs();
     startSessionTimer();
-    document.body.addEventListener('mousemove', (e) => {
-        showButtons();
-    });
+    //document.body.addEventListener('mousemove', (e) => {
+    //    showButtons();
+    //});
 }
 
 function hide(elem) {
@@ -1071,7 +1077,9 @@ function handleRoomClientEvents() {
         if (surveyActive) {
             openURL(url.survey);
         } else {
-            openURL('/newroom');
+          // JP Edit 
+          // Don't do anything for now
+          // openURL('/newroom');
         }
     });
 }
