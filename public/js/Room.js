@@ -184,7 +184,7 @@ async function initEnumerateVideoDevices() {
     if (isEnumerateVideoDevices) return;
     // allow the video
     await navigator.mediaDevices
-        .getUserMedia({ video: true })
+        .getUserMedia({ video: false })
         .then((stream) => {
             enumerateVideoDevices(stream);
             isVideoAllowed = true;
