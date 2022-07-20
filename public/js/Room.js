@@ -156,7 +156,7 @@ function makeId(length) {
 async function initEnumerateDevices() {
     console.log('01 ----> init Enumerate Devices');
     await initEnumerateAudioDevices();
-    await initEnumerateVideoDevices();
+    //await initEnumerateVideoDevices();
     if (!isAudioAllowed && !isVideoAllowed && !joinRoomWithoutAudioVideo) {
         openURL(`/permission?room_id=${room_id}&message=Not allowed both Audio and Video`);
     } else {
