@@ -98,7 +98,6 @@ const unityBuildExists = fs.existsSync(path.join(__dirname, '../../', 'public/un
 const defaultRoomPath = path.join(__dirname, '../../', 'public/views/Room.html');
 const unityRoomPath = path.join(__dirname, '../../', 'public/unity/Room.html');
 const roomLocation = unityBuildExists ? unityRoomPath : defaultRoomPath;
-console.log(unityBuildExists, 'unity?', roomLocation);
 
 // html views
 const views = {
