@@ -71,7 +71,7 @@
         <script defer src="https://cdn.rawgit.com/muaz-khan/DetectRTC/master/DetectRTC.js"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/521/fabric.min.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.23"></script>
         <script defer src="https://unpkg.com/emoji-picker-element@1" type="module"></script>
         <script defer src="https://unpkg.com/@popperjs/core@2"></script>
         <script defer src="https://unpkg.com/tippy.js@6"></script>
@@ -205,12 +205,12 @@
                     <br />
                     <button id="videoShareButton">
                         <i class="fab fa-youtube"></i>
-                        <p>Share Video</p>
+                        <p>Share a Video or Audio</p>
                     </button>
                     <br />
                     <button id="videoCloseBtn" class="hidden">
                         <i class="fas fa-times"></i>
-                        <p>Close Video</p>
+                        <p>Close Video or Audio</p>
                     </button>
                     <br />
                 </div>
@@ -235,6 +235,13 @@
                         <option value="cover">cover</option>
                         <option value="scale-down">scale-down</option>
                         <option value="none">none</option>
+                    </select>
+                    <br />
+                    <p>Video Controls:</p>
+                    <br />
+                    <select id="BtnVideoControls" class="form-select text-light bg-dark">
+                        <option value="Off">Off</option>
+                        <option value="On">On</option>
                     </select>
                     <br />
                 </div>
