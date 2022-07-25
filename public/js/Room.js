@@ -356,60 +356,60 @@ function whoAreYou() {
     return;
   }
 
-  //console.log('04 ----> Who are you');
+  console.log('04 ----> Who are you');
 
-  //peer_name = "Guest User " + Math.floor(Math.random() * 1000 + "");
+  peer_name = "Guest User " + Math.floor(Math.random() * 1000 + "");
 
-  //  if (peer_name) {
-  //      checkMedia();
-  //      getPeerInfo();
-  //      joinRoom(peer_name, room_id);
-  //      return;
-  //  }
+   if (peer_name) {
+       checkMedia();
+       getPeerInfo();
+       joinRoom(peer_name, room_id);
+       return;
+   }
 
-  //  Swal.fire({
-  //      allowOutsideClick: false,
-  //      allowEscapeKey: false,
-  //      background: swalBackground,
-  //      imageAlt: 'mirotalksfu-username',
-  //      imageUrl: image.username,
-  //      input: 'text',
-  //      inputPlaceholder: 'Enter your name',
-  //      html: `<br />
-  //      <div style="overflow: hidden;">
-  //          <button id="initAudioButton" class="fas fa-microphone" onclick="handleAudio(event)"></button>
-  //          <button id="initVideoButton" class="fas fa-video" onclick="handleVideo(event)"></button>
-  //          <button id="initAudioVideoButton" class="fas fa-eye" onclick="handleAudioVideo(event)"></button>
-  //      </div>`,
-  //      confirmButtonText: `Join`,
-  //      showClass: {
-  //          popup: 'animate__animated animate__fadeInDown',
-  //      },
-  //      hideClass: {
-  //          popup: 'animate__animated animate__fadeOutUp',
-  //      },
-  //      inputValidator: (name) => {
-  //          if (!name) return 'Please enter your name';
-  //          peer_name = name;
-  //      },
-  //  }).then(() => {
-  //      getPeerInfo();
-  //      joinRoom(peer_name, room_id);
-  //  });
+   Swal.fire({
+       allowOutsideClick: false,
+       allowEscapeKey: false,
+       background: swalBackground,
+       imageAlt: 'mirotalksfu-username',
+       imageUrl: image.username,
+       input: 'text',
+       inputPlaceholder: 'Enter your name',
+       html: `<br />
+       <div style="overflow: hidden;">
+           <button id="initAudioButton" class="fas fa-microphone" onclick="handleAudio(event)"></button>
+           <button id="initVideoButton" class="fas fa-video" onclick="handleVideo(event)"></button>
+           <button id="initAudioVideoButton" class="fas fa-eye" onclick="handleAudioVideo(event)"></button>
+       </div>`,
+       confirmButtonText: `Join`,
+       showClass: {
+           popup: 'animate__animated animate__fadeInDown',
+       },
+       hideClass: {
+           popup: 'animate__animated animate__fadeOutUp',
+       },
+       inputValidator: (name) => {
+           if (!name) return 'Please enter your name';
+           peer_name = name;
+       },
+   }).then(() => {
+       getPeerInfo();
+       joinRoom(peer_name, room_id);
+   });
 
-  //  if (!DetectRTC.isMobileDevice) {
-  //      setTippy('initAudioButton', 'Toggle the audio', 'left');
-  //      setTippy('initVideoButton', 'Toggle the video', 'right');
-  //      setTippy('initAudioVideoButton', 'Toggle the audio & video', 'right');
-  //  }
+   if (!DetectRTC.isMobileDevice) {
+       setTippy('initAudioButton', 'Toggle the audio', 'left');
+       setTippy('initVideoButton', 'Toggle the video', 'right');
+       setTippy('initAudioVideoButton', 'Toggle the audio & video', 'right');
+   }
 
-  //  initAudioButton = document.getElementById('initAudioButton');
-  //  initVideoButton = document.getElementById('initVideoButton');
-  //  initAudioVideoButton = document.getElementById('initAudioVideoButton');
-  //  if (!isAudioAllowed) hide(initAudioButton);
-  //  if (!isVideoAllowed) hide(initVideoButton);
-  //  if (!isAudioAllowed || !isVideoAllowed) hide(initAudioVideoButton);
-  //  isAudioVideoAllowed = isAudioAllowed && isVideoAllowed;
+   initAudioButton = document.getElementById('initAudioButton');
+   initVideoButton = document.getElementById('initVideoButton');
+   initAudioVideoButton = document.getElementById('initAudioVideoButton');
+   if (!isAudioAllowed) hide(initAudioButton);
+   if (!isVideoAllowed) hide(initVideoButton);
+   if (!isAudioAllowed || !isVideoAllowed) hide(initAudioVideoButton);
+   isAudioVideoAllowed = isAudioAllowed && isVideoAllowed;
 }
 
 function handleAudio(e) {
