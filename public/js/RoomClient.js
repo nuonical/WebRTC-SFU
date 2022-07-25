@@ -149,7 +149,7 @@ class RoomClient {
         this.producerLabel = new Map();
         this.eventListeners = new Map();
 
-        console.log('06 ----> Load Mediasoup Client v', mediasoupClient.version);
+        // console.log('06 ----> Load Mediasoup Client v', mediasoupClient.version);
 
         Object.keys(_EVENTS).forEach(
             function (evt) {
@@ -565,9 +565,10 @@ class RoomClient {
             setColor(startAudioButton, 'red');
             console.log('08 ----> Audio is off');
         }
+      
         if (this.isVideoAllowed) {
             console.log('09 ----> Start video media');
-            this.produce(mediaType.video, videoSelect.value);
+            this.produce(mediaType.video, videoSelect.value);                   
         } else {
             setColor(startVideoButton, 'red');
             console.log('09 ----> Video is off');
@@ -1128,6 +1129,11 @@ class RoomClient {
                 elem = document.createElement('audio');
                 elem.id = id;
                 elem.autoplay = true;
+
+                if (peer_info != null && peer_info.peer_name != null) {
+                  elem.setAttribute("data-username", peer_info.peer_name)
+                }
+
                 this.remoteAudioEl.appendChild(elem);
                 this.attachMediaStream(elem, stream, type, 'Consumer');
                 break;
@@ -1482,6 +1488,7 @@ class RoomClient {
     async sound(name) {
         let sound = '../sounds/' + name + '.wav';
         let audio = new Audio(sound);
+        audio.volume = 0.8;
         try {
             await audio.play();
         } catch (err) {
