@@ -21,6 +21,7 @@ const html = {
 };
 
 const image = {
+    audio: '../images/audio.gif',
     poster: '../images/loader.gif',
     delete: '../images/delete.png',
     locked: '../images/locked.png',
@@ -68,7 +69,6 @@ const _EVENTS = {
 };
 
 let recordedBlobs;
-
 class RoomClient {
     constructor(
         remoteAudioEl,
@@ -802,6 +802,7 @@ class RoomClient {
         elem = document.createElement('video');
         elem.setAttribute('id', id);
         elem.setAttribute('playsinline', true);
+        elem.controls = isVideoControlsOn;
         elem.autoplay = true;
         elem.poster = image.poster;
         this.isMobileDevice || type === mediaType.screen ? (elem.className = '') : (elem.className = 'mirror');
@@ -1040,6 +1041,7 @@ class RoomClient {
                 elem = document.createElement('video');
                 elem.setAttribute('id', id);
                 elem.setAttribute('playsinline', true);
+                elem.controls = isVideoControlsOn;
                 elem.autoplay = true;
                 elem.className = '';
                 elem.poster = image.poster;
@@ -1609,10 +1611,12 @@ class RoomClient {
             this.isVideoOnFullScreen = this.isVideoOnFullScreen ? false : true;
         });
         videoPlayer.addEventListener('click', () => {
-            if ((this.isMobileDevice && this.isVideoOnFullScreen) || !this.isMobileDevice) {
-                videoPlayer.style.pointerEvents = this.isVideoOnFullScreen ? 'auto' : 'none';
-                this.toggleFullScreen(videoPlayer);
-                this.isVideoOnFullScreen = this.isVideoOnFullScreen ? false : true;
+            if (!videoPlayer.hasAttribute('controls')) {
+                if ((this.isMobileDevice && this.isVideoOnFullScreen) || !this.isMobileDevice) {
+                    videoPlayer.style.pointerEvents = this.isVideoOnFullScreen ? 'auto' : 'none';
+                    this.toggleFullScreen(videoPlayer);
+                    this.isVideoOnFullScreen = this.isVideoOnFullScreen ? false : true;
+                }
             }
         });
         videoPlayer.addEventListener('fullscreenchange', (e) => {
@@ -1627,6 +1631,26 @@ class RoomClient {
                 this.isVideoOnFullScreen = false;
             }
         });
+    }
+
+    // ####################################################
+    // HANDLE VIDEO | OBJ FIT | CONTROLS |
+    // ####################################################
+
+    handleVideoObjectFit(value) {
+        document.documentElement.style.setProperty('--videoObjFit', value);
+    }
+
+    handleVideoControls(value) {
+        isVideoControlsOn = value == 'On' ? true : false;
+        let cameras = this.getEcN('Camera');
+        for (let i = 0; i < cameras.length; i++) {
+            let cameraId = cameras[i].id.replace('__d', '');
+            let videoPlayer = this.getId(cameraId);
+            videoPlayer.hasAttribute('controls')
+                ? videoPlayer.removeAttribute('controls')
+                : videoPlayer.setAttribute('controls', isVideoControlsOn);
+        }
     }
 
     // ####################################################
@@ -2349,7 +2373,7 @@ class RoomClient {
     }
 
     // ####################################################
-    // SHARE VIDEO YOUTUBE or MP4
+    // SHARE VIDEO YOUTUBE - MP4 - WEBM - OGG or AUDIO mp3
     // ####################################################
 
     handleSV(uid) {
@@ -2368,8 +2392,8 @@ class RoomClient {
             background: swalBackground,
             position: 'center',
             imageUrl: image.videoShare,
-            title: 'Share YouTube, mp4, webm, ogg video',
-            text: 'Paste YouTube, mp4, webm, ogg URL',
+            title: 'Share a Video or Audio',
+            text: 'Paste a Video or Audio URL',
             input: 'text',
             showCancelButton: true,
             confirmButtonText: `Share`,
@@ -2386,12 +2410,14 @@ class RoomClient {
                     return;
                 }
                 if (!this.isVideoTypeSupported(result.value)) {
-                    userLog('info', 'Video type supported: youtube, mp4, webm, ogg', 'top-end');
+                    userLog('warning', 'Something wrong, try with another Video or audio URL');
                     return;
                 }
-                // https://www.youtube.com/watch?v=RT6_Id5-7-s
-                // http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
-
+                /*
+                    https://www.youtube.com/watch?v=RT6_Id5-7-s
+                    https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+                    https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3
+                */
                 let is_youtube = this.getVideoType(result.value) == 'na' ? true : false;
                 let video_url = is_youtube ? this.getYoutubeEmbed(result.value) : result.value;
                 if (video_url) {
@@ -2414,13 +2440,20 @@ class RoomClient {
 
     getVideoType(url) {
         if (url.endsWith('.mp4')) return 'video/mp4';
+        if (url.endsWith('.mp3')) return 'video/mp3';
         if (url.endsWith('.webm')) return 'video/webm';
         if (url.endsWith('.ogg')) return 'video/ogg';
         return 'na';
     }
 
     isVideoTypeSupported(url) {
-        if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.includes('youtube'))
+        if (
+            url.endsWith('.mp4') ||
+            url.endsWith('.mp3') ||
+            url.endsWith('.webm') ||
+            url.endsWith('.ogg') ||
+            url.includes('youtube')
+        )
             return true;
         return false;
     }
@@ -2477,6 +2510,9 @@ class RoomClient {
             video.type = video_type;
             video.autoplay = true;
             video.controls = true;
+            if (video_type == 'video/mp3') {
+                video.poster = image.audio;
+            }
         }
         video.setAttribute('id', '__videoShare');
         video.setAttribute('src', video_url);
@@ -2492,7 +2528,7 @@ class RoomClient {
             this.closeVideo(true);
         });
         if (!this.isMobileDevice) {
-            this.setTippy(e.id, 'Close video', 'top-end');
+            this.setTippy(e.id, 'Close video player', 'top-end');
         }
         console.log('[openVideo] Video-element-count', this.videoMediaContainer.childElementCount);
         this.sound('joined');
@@ -2529,33 +2565,39 @@ class RoomClient {
         if (emit) {
             switch (action) {
                 case 'lock':
-                    Swal.fire({
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showDenyButton: true,
-                        background: swalBackground,
-                        imageUrl: image.locked,
-                        input: 'text',
-                        inputPlaceholder: 'Set Room password',
-                        confirmButtonText: `OK`,
-                        denyButtonText: `Cancel`,
-                        showClass: {
-                            popup: 'animate__animated animate__fadeInDown',
-                        },
-                        hideClass: {
-                            popup: 'animate__animated animate__fadeOutUp',
-                        },
-                        inputValidator: (pwd) => {
-                            if (!pwd) return 'Please enter the Room password';
-                            this.RoomPassword = pwd;
-                        },
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            data.password = this.RoomPassword;
-                            this.socket.emit('roomAction', data);
-                            this.roomStatus(action);
-                        }
-                    });
+                    if (room_password) {
+                        data.password = room_password;
+                        this.socket.emit('roomAction', data);
+                        this.roomStatus(action);
+                    } else {
+                        Swal.fire({
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showDenyButton: true,
+                            background: swalBackground,
+                            imageUrl: image.locked,
+                            input: 'text',
+                            inputPlaceholder: 'Set Room password',
+                            confirmButtonText: `OK`,
+                            denyButtonText: `Cancel`,
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown',
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp',
+                            },
+                            inputValidator: (pwd) => {
+                                if (!pwd) return 'Please enter the Room password';
+                                this.RoomPassword = pwd;
+                            },
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                data.password = this.RoomPassword;
+                                this.socket.emit('roomAction', data);
+                                this.roomStatus(action);
+                            }
+                        });
+                    }
                     break;
                 case 'unlock':
                     this.socket.emit('roomAction', data);
