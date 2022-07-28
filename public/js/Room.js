@@ -1810,7 +1810,7 @@ function adaptAspectRatio(participantsCount) {
 
 function setUserAudioByName(userName, audioLevel) {
   let audioElement;
-  
+
   // find the user in the cache
   let userToSet = USERS_WITH_AUDIO.filter((u) => {
     return u.username === username ? u.audio : undefined;
@@ -1821,7 +1821,7 @@ function setUserAudioByName(userName, audioLevel) {
     audioElement = usersdocument.querySelector(`[data-username="${userName}"]`);
     USERS_WITH_AUDIO.push({ username: userName, audio: audioElement });
   } else {
-    audioElement = userToSet.audio;
+    audioElement = userToSet[0].audio;
   }
 
   if (audioElement) {
