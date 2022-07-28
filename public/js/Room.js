@@ -1810,7 +1810,7 @@ function adaptAspectRatio(participantsCount) {
 
 function setUserAudioByName(userName, audioLevel) {
   let audioElement;
-  console.log('users with audio', USERS_WITH_AUDIO);
+  
   // find the user in the cache
   let userToSet = USERS_WITH_AUDIO.filter((u) => {
     return u.username === username ? u.audio : undefined;
@@ -1820,9 +1820,7 @@ function setUserAudioByName(userName, audioLevel) {
     // we don't have this user in the cache yet
     audioElement = usersdocument.querySelector(`[data-username="${userName}"]`);
     USERS_WITH_AUDIO.push({ username: userName, audio: audioElement });
-    console.log('added user to cache', USERS_WITH_AUDIO);
   } else {
-    console.log('user alread in the cache');
     audioElement = userToSet.audio;
   }
 
