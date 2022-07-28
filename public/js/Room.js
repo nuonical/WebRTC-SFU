@@ -27,6 +27,7 @@ const _PEER = {
 
 const surveyActive = false;
 
+let USERS_WITH_AUDIO = [];
 let participantsCount = 0;
 
 let rc = null;
@@ -1808,8 +1809,23 @@ function adaptAspectRatio(participantsCount) {
 // ####################################################
 
 function setUserAudioByName(userName, audioLevel) {
+  let audioElement;
+  console.log('users with audio', USERS_WITH_AUDIO);
+  // find the user in the cache
+  let userToSet = USERS_WITH_AUDIO.filter((u) => {
+    return u.username === username ? u.audio : undefined;
+  });
 
-  var audioElement = document.querySelector('[data-username="' + userName + '"]');
+  if(!userToSet.length) {
+    // we don't have this user in the cache yet
+    audioElement = usersdocument.querySelector(`[data-username="${userName}"]`);
+    USERS_WITH_AUDIO.push({ username: userName, audio: audioElement });
+    console.log('added user to cache', USERS_WITH_AUDIO);
+  } else {
+    console.log('user alread in the cache');
+    audioElement = userToSet.audio;
+  }
+
   if (audioElement) {
     audioElement.volume = audioLevel;
     // console.log("Set User volume for " + userName + "to " + audioLevel);
