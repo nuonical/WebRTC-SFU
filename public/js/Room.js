@@ -1813,7 +1813,7 @@ function setUserAudioByName(userName, audioLevel) {
 
   // find the user in the cache
   let userToSet = USERS_WITH_AUDIO.filter((u) => {
-    return u.username === username ? u.audio : undefined;
+    return u.username === username;
   });
 
   if(!userToSet.length) {
