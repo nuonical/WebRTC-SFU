@@ -600,7 +600,6 @@ function roomIsReady() {
     show(chatButton);
     show(chatSendButton);
     show(chatTypeToggleButton);
-    //show(chatSendGlobalButton);
     show(chatEmojiButton);
     show(chatShareFileButton);
     if (isWebkitSpeechRecognitionSupported) {
