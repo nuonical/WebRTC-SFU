@@ -1801,11 +1801,6 @@ class RoomClient {
     }
 
     sendMessage() {
-        if (!this.thereIsParticipants()) {
-            chatMessage.value = '';
-            this.userLog('info', 'No participants in the room', 'top-end');
-            return;
-        }
         let peer_msg = this.formatMsg(chatMessage.value);
         if (!peer_msg) return;
         let data = {
@@ -1836,11 +1831,6 @@ class RoomClient {
     }
 
     sendMessageTo(to_peer_id) {
-        if (!this.thereIsParticipants()) {
-            chatMessage.value = '';
-            this.userLog('info', 'No participants in the room expect you', 'top-end');
-            return;
-        }
         Swal.fire({
             background: swalBackground,
             position: 'center',
