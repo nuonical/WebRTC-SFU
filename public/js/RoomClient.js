@@ -456,8 +456,11 @@ class RoomClient {
         this.socket.on(
             'message',
             function (data) {
-                console.log('New message:', data);
-                this.showMessage(data);
+              console.log('New message:', data);
+              if (unityInstance) {
+                unityInstance.SendMessage("ChatSystem", "SendChatMessageAs", data.peer_name + "|" + data.peer_msg);
+              }
+              this.showMessage(data);
             }.bind(this),
         );
 
@@ -802,7 +805,7 @@ class RoomClient {
         elem = document.createElement('video');
         elem.setAttribute('id', id);
         elem.setAttribute('playsinline', true);
-        elem.controls = isVideoControlsOn;
+        elem.controls = false;
         elem.autoplay = true;
         elem.poster = image.poster;
         this.isMobileDevice || type === mediaType.screen ? (elem.className = '') : (elem.className = 'mirror');
