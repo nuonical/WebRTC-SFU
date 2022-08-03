@@ -203,8 +203,6 @@ class RoomClient {
                 successCallback();
             }.bind(this),
         );
-
-        //this.createRoom('globalroom');
     }
 
     // ####################################################
