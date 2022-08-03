@@ -6,16 +6,16 @@ const log = new Logger('Room');
 
 module.exports = class Room {
   constructor(room_id, worker, io) {
-      this.id = room_id;
-      this.worker = worker;
-      this.router = null;
-      this.audioLevelObserver = null;
-      this.audioLevelObserverEnabled = false;
-      this.io = io;
-      this._isLocked = false;
-      this._roomPassword = null;
-      this.peers = new Map();
-      this.createTheRouter();
+    this.id = room_id;
+    this.worker = worker;
+    this.router = null;
+    this.audioLevelObserver = null;
+    this.audioLevelObserverEnabled = true;
+    this.io = io;
+    this._isLocked = false;
+    this._roomPassword = null;
+    this.peers = new Map();
+    this.createTheRouter();
   }
 
   // ####################################################
