@@ -1885,7 +1885,7 @@ class RoomClient {
             console.log('Send global message:', data);
             this.socket.emit('globalmessage', data);
             this.setMsgAvatar('right', this.peer_name);
-            this.appendMessage('right', this.rightMsgAvatar, this.peer_name, peer_msg, to_peer_id);
+            this.appendGlobalMessage('right', this.rightMsgAvatar, this.peer_name, peer_msg, to_peer_id);
             if (!this.isChatOpen) this.toggleChat();
         });
     }
