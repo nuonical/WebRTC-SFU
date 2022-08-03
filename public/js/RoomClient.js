@@ -1044,7 +1044,7 @@ class RoomClient {
                 elem = document.createElement('video');
                 elem.setAttribute('id', id);
                 elem.setAttribute('playsinline', true);
-                elem.controls = isVideoControlsOn;
+                elem.controls = false;
                 elem.autoplay = true;
                 elem.className = '';
                 elem.poster = image.poster;
