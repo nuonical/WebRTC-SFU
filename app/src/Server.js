@@ -677,21 +677,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on('producerClosed', (data) => {
-        if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.room_id)) return;
 
     log.debug('Producer close', data);
+
+    // peer_info audio Or video ON
+    roomList.get(socket.room_id).getPeers().get(socket.id).updatePeerInfo(data);
     roomList.get(socket.room_id).closeProducer(socket.id, data.producer_id);
+});
 
-    // peer_info audio Or video OFF
-    // list.getPeers().get(socket.id).updatePeerInfo(data);
-    //roomList.get(socket.room_id).closeProducer(socket.id, data.producer_id);
-    //list.closeProducer(socket.id, data.producer_id);
-  });
-
-  socket.on('resume', async (_, callback) => {
+socket.on('resume', async (_, callback) => {
     await consumer.resume();
     callback();
-  });
+});
 
   socket.on('getRoomInfo', (_, cb) => {
         if (!roomList.has(socket.room_id)) return;

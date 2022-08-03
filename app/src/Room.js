@@ -23,19 +23,19 @@ module.exports = class Room {
   // ####################################################
 
   createTheRouter() {
-    const mediaCodecs = config.mediasoup.router.mediaCodecs;
-    this.worker
-      .createRouter({
-        mediaCodecs,
-      })
-      .then(
-        function (router) {
-          this.router = router;
-          if (this.audioLevelObserverEnabled) {
-            this.startAudioLevelObservation(router);
-          }
-        }.bind(this),
-      );
+      const mediaCodecs = config.mediasoup.router.mediaCodecs;
+      this.worker
+          .createRouter({
+              mediaCodecs,
+          })
+          .then(
+              function (router) {
+                  this.router = router;
+                  if (this.audioLevelObserverEnabled) {
+                      this.startAudioLevelObservation(router);
+                  }
+              }.bind(this),
+          );
   }
 
   // ####################################################
@@ -46,31 +46,32 @@ module.exports = class Room {
     log.debug('Start audioLevelObserver for signaling active speaker...');
 
     this.audioLevelObserver = await router.createAudioLevelObserver({
-      maxEntries: 1,
-      threshold: -80,
-      interval: 800,
+        maxEntries: 1,
+        threshold: -80,
+        interval: 800,
     });
 
     this.audioLevelObserver.on('volumes', (volumes) => {
-      const { producer, volume } = volumes[0];
-      let audioVolume = Math.round(Math.pow(10, volume / 85) * 10); // 1-10
-      if (audioVolume > 2) {
-        //log.debug('PEERS', this.peers);
-        this.peers.forEach((peer) => {
-          peer.producers.forEach((peerProducer) => {
-            if (
-              producer.id === peerProducer.id &&
-              peerProducer.kind == 'audio' &&
-              peer.peer_audio === true
-            ) {
-              let data = { peer_id: peer.id, audioVolume: audioVolume };
-              //log.debug('audioLevelObserver', data);
-              this.io.emit('audioVolume', data);
-            }
-          });
-        });
-      }
+        const { producer, volume } = volumes[0];
+        let audioVolume = Math.round(Math.pow(10, volume / 85) * 10); // 1-10
+        if (audioVolume > 2) {
+            //log.debug('PEERS', this.peers);
+            this.peers.forEach((peer) => {
+                peer.producers.forEach((peerProducer) => {
+                    if (
+                        producer.id === peerProducer.id &&
+                        peerProducer.kind == 'audio' &&
+                        peer.peer_audio === true
+                    ) {
+                        let data = { peer_name: peer.peer_name, peer_id: peer.id, audioVolume: audioVolume };
+                        //log.debug('audioLevelObserver', data);
+                        this.broadCast(0, 'audioVolume', data);
+                    }
+                });
+            });
+        }
     });
+
     this.audioLevelObserver.on('silence', () => {
       //log.debug('audioLevelObserver', { volume: 'silence' });
       return;

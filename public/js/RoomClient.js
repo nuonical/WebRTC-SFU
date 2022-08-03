@@ -41,6 +41,22 @@ const mediaType = {
     video: 'videoType',
     camera: 'cameraType',
     screen: 'screenType',
+    speaker: 'speakerType',
+};
+
+const LOCAL_STORAGE_DEVICES = {
+    audio: {
+        index: 0,
+        select: null,
+    },
+    speaker: {
+        index: 0,
+        select: null,
+    },
+    video: {
+        index: 0,
+        select: null,
+    },
 };
 
 const _EVENTS = {
@@ -561,20 +577,27 @@ class RoomClient {
     // ####################################################
 
     startLocalMedia() {
+        let localStorageDevices = this.getLocalStorageDevices();
+        console.log('08 ----> Get Local Storage Devices', localStorageDevices);
+        if (localStorageDevices) {
+            microphoneSelect.selectedIndex = localStorageDevices.audio.index;
+            speakerSelect.selectedIndex = localStorageDevices.speaker.index;
+            videoSelect.selectedIndex = localStorageDevices.video.index;
+        }
         if (this.isAudioAllowed) {
-            console.log('08 ----> Start audio media');
+            console.log('09 ----> Start audio media');
             this.produce(mediaType.audio, microphoneSelect.value);
         } else {
             setColor(startAudioButton, 'red');
-            console.log('08 ----> Audio is off');
+            console.log('09 ----> Audio is off');
         }
       
         if (this.isVideoAllowed) {
-            console.log('09 ----> Start video media');
-            this.produce(mediaType.video, videoSelect.value);                   
+            console.log('10 ----> Start video media');
+            this.produce(mediaType.video, videoSelect.value);
         } else {
             setColor(startVideoButton, 'red');
-            console.log('09 ----> Video is off');
+            console.log('10 ----> Video is off');
             this.setVideoOff(this.peer_info, false);
             this.sendVideoOff();
         }
@@ -1185,7 +1208,7 @@ class RoomClient {
         d.className = 'Camera';
         d.id = peer_id + '__videoOff';
         vb = document.createElement('div');
-        vb.setAttribute('id', this.peer_id + 'vb');
+        vb.setAttribute('id', peer_id + 'vb');
         vb.className = 'videoMenuBar fadein';
         au = document.createElement('button');
         au.id = peer_id + '__audio';
@@ -1293,13 +1316,13 @@ class RoomClient {
             }).then((result) => {
                 if (result.isConfirmed) {
                     startScreenButton.click();
-                    console.log('10 ----> Screen is on');
+                    console.log('11 ----> Screen is on');
                 } else {
-                    console.log('10 ----> Screen is on');
+                    console.log('11 ----> Screen is on');
                 }
             });
         } else {
-            console.log('10 ----> Screen is off');
+            console.log('11 ----> Screen is off');
         }
     }
 
@@ -1359,7 +1382,7 @@ class RoomClient {
         console.log(who + ' Success attached media ' + type);
     }
 
-    attachSinkId(elem, sinkId) {
+    async attachSinkId(elem, sinkId) {
         if (typeof elem.sinkId !== 'undefined') {
             elem.setSinkId(sinkId)
                 .then(() => {
@@ -1367,11 +1390,13 @@ class RoomClient {
                 })
                 .catch((err) => {
                     let errorMessage = err;
+                    let speakerSelect = this.getId('speakerSelect');
                     if (err.name === 'SecurityError')
                         errorMessage = `You need to use HTTPS for selecting audio output device: ${err}`;
                     console.error('Attach SinkId error: ', errorMessage);
                     this.userLog('error', errorMessage, 'top-end');
-                    this.getId('speakerSelect').selectedIndex = 0;
+                    speakerSelect.selectedIndex = 0;
+                    this.setLocalStorageDevices(mediaType.speaker, 0, speakerSelect.value);
                 });
         } else {
             let error = `Browser seems doesn't support output device selection.`;
@@ -2700,12 +2725,13 @@ class RoomClient {
 
     handleAudioVolume(data) {
         let peerId = data.peer_id;
+        let peerName = data.peer_name;
         let producerAudioBtn = this.getId(peerId + '_audio');
         let consumerAudioBtn = this.getId(peerId + '__audio');
         let pbProducer = this.getId(peerId + '_pitchBar');
         let pbConsumer = this.getId(peerId + '__pitchBar');
         let audioVolume = data.audioVolume * 10; //10-100
-        // console.log('Active speaker', { peer_id: peerId, audioVolume: audioVolume });
+        //console.log('Active speaker', { peer_name: peerName, peer_id: peerId, audioVolume: audioVolume });
         if (audioVolume > 40) {
             if (producerAudioBtn) producerAudioBtn.style.color = 'orange';
             if (consumerAudioBtn) consumerAudioBtn.style.color = 'orange';
@@ -3075,5 +3101,31 @@ class RoomClient {
                 'top-start',
             );
         }
+    }
+
+    // ####################################################
+    // LOCAL STORAGE DEVICES
+    // ####################################################
+
+    setLocalStorageDevices(type, index, select) {
+        switch (type) {
+            case RoomClient.mediaType.audio:
+                LOCAL_STORAGE_DEVICES.audio.index = index;
+                LOCAL_STORAGE_DEVICES.audio.select = select;
+                break;
+            case RoomClient.mediaType.video:
+                LOCAL_STORAGE_DEVICES.video.index = index;
+                LOCAL_STORAGE_DEVICES.video.select = select;
+                break;
+            case RoomClient.mediaType.speaker:
+                LOCAL_STORAGE_DEVICES.speaker.index = index;
+                LOCAL_STORAGE_DEVICES.speaker.select = select;
+                break;
+        }
+        localStorage.setItem('LOCAL_STORAGE_DEVICES', JSON.stringify(LOCAL_STORAGE_DEVICES));
+    }
+
+    getLocalStorageDevices() {
+        return JSON.parse(localStorage.getItem('LOCAL_STORAGE_DEVICES'));
     }
 }
