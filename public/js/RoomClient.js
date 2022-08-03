@@ -130,6 +130,7 @@ class RoomClient {
         this.camera = 'user';
 
         this.chatMessages = [];
+        this.chatGlobalMessages = [];
         this.leftMsgAvatar = null;
         this.rightMsgAvatar = null;
 
@@ -202,6 +203,8 @@ class RoomClient {
                 successCallback();
             }.bind(this),
         );
+
+        //this.createRoom('globalroom');
     }
 
     // ####################################################
@@ -474,6 +477,14 @@ class RoomClient {
             function (data) {
                 console.log('New message:', data);
                 this.showMessage(data);
+            }.bind(this),
+        );
+
+        this.socket.on(
+            'globalmessage',
+            function (data) {
+                console.log('New global message:', data);
+                this.showGlobalMessage(data);
             }.bind(this),
         );
 
@@ -1766,6 +1777,20 @@ class RoomClient {
         }
     }
 
+    toggleChatType() {
+        let localChat = this.getId('chatMsger');
+        let globalChat = this.getId('chatGlobalMsger');
+        let chatMessageInput = this.getId('chatMessage');
+        let chatGlobalMessageInput = this.getId('chatMessageGlobal');
+        let globalMessageTitle = this.getId('chatGlobalTitle');
+
+        localChat.classList.toggle('hidden');
+        globalChat.classList.toggle('hidden');
+        chatMessageInput.classList.toggle('hidden');
+        chatGlobalMessageInput.classList.toggle('hidden');
+        globalMessageTitle.classList.toggle('hidden');
+    }
+
     toggleChatEmoji() {
         this.getId('chatEmoji').classList.toggle('show');
         this.isChatEmojiOpen = this.isChatEmojiOpen ? false : true;
@@ -1790,6 +1815,21 @@ class RoomClient {
         this.setMsgAvatar('right', this.peer_name);
         this.appendMessage('right', this.rightMsgAvatar, this.peer_name, peer_msg, 'all');
         chatMessage.value = '';
+    }
+
+    sendGlobalMessage() {
+        let peer_msg = this.formatMsg(chatMessageGlobal.value);
+        if (!peer_msg) return;
+        let data = {
+            peer_name: this.peer_name,
+            to_peer_id: 'all',
+            peer_msg: peer_msg,
+        };
+        console.log('Send global message:', data);
+        this.socket.emit('globalmessage', data);
+        this.setMsgAvatar('right', this.peer_name);
+        this.appendGlobalMessage('right', this.rightMsgAvatar, this.peer_name, peer_msg, 'all');
+        chatMessageGlobal.value = '';
     }
 
     sendMessageTo(to_peer_id) {
@@ -1828,10 +1868,48 @@ class RoomClient {
         });
     }
 
+    sendGlobalMessageTo(to_peer_id) {
+        Swal.fire({
+            background: swalBackground,
+            position: 'center',
+            imageUrl: image.message,
+            input: 'text',
+            inputPlaceholder: '💬 Global message...',
+            showCancelButton: true,
+            confirmButtonText: `Send`,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown',
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp',
+            },
+        }).then((result) => {
+            let peer_msg = this.formatMsg(result.value);
+            if (!peer_msg) return;
+            let data = {
+                peer_name: this.peer_name,
+                to_peer_id: to_peer_id,
+                peer_msg: peer_msg,
+            };
+            console.log('Send global message:', data);
+            this.socket.emit('globalmessage', data);
+            this.setMsgAvatar('right', this.peer_name);
+            this.appendMessage('right', this.rightMsgAvatar, this.peer_name, peer_msg, to_peer_id);
+            if (!this.isChatOpen) this.toggleChat();
+        });
+    }
+
     showMessage(data) {
         if (!this.isChatOpen) this.toggleChat();
         this.setMsgAvatar('left', data.peer_name);
         this.appendMessage('left', this.leftMsgAvatar, data.peer_name, data.peer_msg, data.to_peer_id);
+        this.sound('message');
+    }
+
+    showGlobalMessage(data) {
+        if (!this.isChatOpen) this.toggleChat();
+        this.setMsgAvatar('left', data.peer_name);
+        this.appendGlobalMessage('left', this.leftMsgAvatar, data.peer_name, data.peer_msg, data.to_peer_id);
         this.sound('message');
     }
 
@@ -1859,6 +1937,27 @@ class RoomClient {
         this.collectMessages(time, from, msg);
         chatMsger.insertAdjacentHTML('beforeend', msgHTML);
         chatMsger.scrollTop += 500;
+    }
+
+    appendGlobalMessage(side, img, from, msg, to) {
+        let time = this.getTimeNow();
+        let msgBubble = to == 'all' ? 'msg-bubble' : 'msg-bubble-private';
+        let message = to == 'all' ? msg : msg + '<br/> (private message)';
+        let msgHTML = `
+        <div class="msg ${side}-msg">
+            <div class="msg-img" style="background-image: url('${img}')"></div>
+            <div class=${msgBubble}>
+                <div class="msg-info">
+                    <div class="msg-info-name">${from}</div>
+                    <div class="msg-info-time">${time}</div>
+                </div>
+                <div class="msg-text">${message}</div>
+            </div>
+        </div>
+        `;
+        this.collectGlobalMessages(time, from, msg);
+        chatGlobalMsger.insertAdjacentHTML('beforeend', msgHTML);
+        chatGlobalMsger.scrollTop += 500;
     }
 
     formatMsg(message) {
@@ -1893,6 +1992,14 @@ class RoomClient {
         });
     }
 
+    collectGlobalMessages(time, from, msg) {
+        this.chatGlobalMessages.push({
+            time: time,
+            from: from,
+            msg: msg,
+        });
+    }
+
     chatClean() {
         Swal.fire({
             background: swalBackground,
@@ -1921,6 +2028,34 @@ class RoomClient {
         });
     }
 
+    chatGlobalClean() {
+        Swal.fire({
+            background: swalBackground,
+            position: 'center',
+            title: 'Clean up global chat Messages?',
+            imageUrl: image.delete,
+            showDenyButton: true,
+            confirmButtonText: `Yes`,
+            denyButtonText: `No`,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown',
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp',
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let msgs = chatGlobalMsger.firstChild;
+                while (msgs) {
+                    chatGlobalMsger.removeChild(msgs);
+                    msgs = chatGlobalMsger.firstChild;
+                }
+                this.chatGlobalMessages = [];
+                this.sound('delete');
+            }
+        });
+    }
+
     chatSave() {
         if (this.chatMessages.length === 0) {
             userLog('info', 'No chat messages to save', 'top-end');
@@ -1933,6 +2068,27 @@ class RoomClient {
 
         let a = document.createElement('a');
         a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.chatMessages, null, 1));
+        a.download = `${date}-${time}` + '-CHAT.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    chatGlobalSave() {
+        if (this.chatGlobalMessages.length === 0) {
+            userLog('info', 'No global messages to save', 'top-end');
+            return;
+        }
+
+        const newDate = new Date();
+        const date = newDate.toISOString().split('T')[0];
+        const time = newDate.toTimeString().split(' ')[0];
+
+        let a = document.createElement('a');
+        a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.chatGlobalMessages, null, 1));
         a.download = `${date}-${time}` + '-CHAT.txt';
         document.body.appendChild(a);
         a.click();

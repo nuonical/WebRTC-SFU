@@ -339,15 +339,21 @@
         <section id="chatRoom" class="chat-room center fadein">
             <section id="msger" class="msger">
                 <header id="chatHeader" class="chat-header">
-                    <div class="chat-header-title"><i class="fas fa-comment-alt"></i>&nbsp; Chat</div>
+                    <div class="chat-header-title">
+                        <i class="fas fa-comment-alt"></i>&nbsp; <span id="chatGlobalTitle" class="hidden">Global</span> Chat
+                    </div>
                     <div class="chat-header-options">
                         <button id="chatSaveButton" class="fas fa-save"></button>
                         <button id="chatCleanButton" class="fas fa-trash"></button>
+                        <button id="chatTypeToggleButton" class="fas fa-globe"></button>
                         <button id="chatCloseButton" class="fas fa-times"></button>
                     </div>
                 </header>
                 <main id="chatMsger" class="chat-msger">
                     <!-- chat messages -->
+                </main>
+                <main id="chatGlobalMsger" class="chat-msger hidden">
+                    <!-- global chat messages -->
                 </main>
                 <div class="chat-msger-inputarea">
                     <input
@@ -355,6 +361,12 @@
                         class="chat-msger-input"
                         type="text"
                         placeholder="💬 Enter your message..."
+                    />
+                    <input
+                        id="chatMessageGlobal"
+                        class="chat-msger-input hidden"
+                        type="text"
+                        placeholder="💬 Global message..."
                     />
                     <button id="chatEmojiButton" class="hidden">
                         <i class="fas fa-smile"></i>
@@ -370,6 +382,9 @@
                     </button>
                     <button id="chatSendButton" class="hidden">
                         <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <button id="chatSendGlobalButton" class="hidden">
+                        <i class="fas fa-globe"></i>
                     </button>
                 </div>
                 <div id="chatEmoji" class="hidden fadein">
