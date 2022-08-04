@@ -1,0 +1,101 @@
+# Custom nginx.conf
+# Copy this template to `nginx.conf` in the root directory of this project
+# Edit the new conf file you just created replacing the `{your location of this project}` with the right value
+# Add an include to your local nginx.conf file for this custom conf
+# If installed with Homebrew it may be `/opt/homebrew/etc/nginx/nginx.conf`
+# At the bottom of that file inside the closing http bracket add `include {your local location of this project}/nginx.conf;`
+# Test the configuration with `nginx -t`
+# Reload the server with `nginx -s reload`
+
+server {
+
+    root {your location of this project};
+
+    index index.html index.htm index.nginx-debian.html;
+
+    # serve static files
+    location ~ ^/(images|javascript|js|css|flash|media|static)/  {
+      root    {your location of this project}/public;
+      expires 30d;
+    }
+   
+
+    location / {
+        root {your location of this project}/public;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_pass https://localhost:3010;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        #try_files $uri $uri/ =404;
+    }
+
+    # this assumes you have the Unity build files in the public folder of this project
+    error_page 502 /room.html;
+    location /room.html {
+        root {your location of this project}/public/unity/room.html;
+    } 
+
+    # On-disk Brotli-precompressed data files should be served with compression enabled:
+    location ~ .+\.(data|symbols\.json)\.br$ {
+        root {your location of this project}/public;
+        # Because this file is already pre-compressed on disk, disable the on-demand compression on it.
+        # Otherwise nginx would attempt double compression.
+        gzip off;
+        add_header Content-Encoding br;
+        default_type application/octet-stream;
+    }
+
+    # On-disk Brotli-precompressed JavaScript code files:
+    location ~ .+\.js\.br$ {
+        root {your location of this project}/public;
+        gzip off; # Do not attempt dynamic gzip compression on an already compressed file
+        add_header Content-Encoding br;
+        default_type application/javascript;
+    }
+
+    # On-disk Brotli-precompressed WebAssembly files:
+    location ~ .+\.wasm\.br$ {
+        root {your location of this project}/public;
+        gzip off; # Do not attempt dynamic gzip compression on an already compressed file
+        add_header Content-Encoding br;
+        # Enable streaming WebAssembly compilation by specifying the correct MIME type for
+        # Wasm files.
+        default_type application/wasm;
+    }
+
+    # On-disk gzip-precompressed data files should be served with compression enabled:
+    location ~ .+\.(data|symbols\.json)\.gz$ {
+        root {your location of this project}/public;
+        gzip off; # Do not attempt dynamic gzip compression on an already compressed file
+        add_header Content-Encoding gzip;
+        default_type application/octet-stream;
+    }
+
+    # On-disk gzip-precompressed JavaScript code files:
+    location ~ .+\.js\.gz$ {
+        root {your location of this project}/public;
+        gzip off; # Do not attempt dynamic gzip compression on an already compressed file
+        add_header Content-Encoding gzip;
+        default_type application/javascript;
+    }
+
+    # On-disk gzip-precompressed WebAssembly files:
+    location ~ .+\.wasm\.gz$ {
+        root {your location of this project}/public;
+        gzip off; # Do not attempt dynamic gzip compression on an already compressed file
+        add_header Content-Encoding gzip;
+        # Enable streaming WebAssembly compilation by specifying the correct MIME type for
+        # Wasm files.
+        default_type application/wasm;
+    }
+
+
+    ssl_certificate {your location of this project}/app/ssl/cert.pem; 
+    ssl_certificate_key {your location of this project}/app/ssl/key.pem;
+
+    # Enable HTTP/2
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+}
