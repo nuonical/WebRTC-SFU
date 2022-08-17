@@ -438,6 +438,7 @@ async function getMediasoupWorker() {
 // ####################################################
 
 io.on('connection', (socket) => {
+  log.debug('Socket connection');
   socket.on('createRoom', async ({ room_id }, callback) => {
     socket.room_id = room_id;
 
@@ -593,29 +594,29 @@ io.on('connection', (socket) => {
     socket.emit('newProducers', producerList);
   });
 
-    socket.on('createWebRtcTransport', async (_, callback) => {
-        if (!roomList.has(socket.room_id)) {
-            return callback({ error: 'Room not found' });
-        }
+  socket.on('createWebRtcTransport', async (_, callback) => {
+      if (!roomList.has(socket.room_id)) {
+          return callback({ error: 'Room not found' });
+      }
 
-        log.debug('Create webrtc transport', getPeerName());
-        try {
-            const { params } = await roomList.get(socket.room_id).createWebRtcTransport(socket.id);
-            callback(params);
-        } catch (err) {
-            log.error('Create WebRtc Transport error: ', err.message);
-            callback({
-                error: err.message,
-            });
-        }
-    });
+      log.debug('Create webrtc transport', getPeerName());
+      try {
+          const { params } = await roomList.get(socket.room_id).createWebRtcTransport(socket.id);
+          callback(params);
+      } catch (err) {
+          log.error('Create WebRtc Transport error: ', err.message);
+          callback({
+              error: err.message,
+          });
+      }
+  });
 
-    socket.on('connectTransport', async ({ transport_id, dtlsParameters }, callback) => {
-        if (!roomList.has(socket.room_id)) {
-            return callback({ error: 'Room not found' });
-        }
+  socket.on('connectTransport', async ({ transport_id, dtlsParameters }, callback) => {
+      if (!roomList.has(socket.room_id)) {
+          return callback({ error: 'Room not found' });
+      }
 
-        log.debug('Connect transport', getPeerName());
+      log.debug('Connect transport', getPeerName());
 
     await roomList.get(socket.room_id).connectPeerTransport(socket.id, transport_id, dtlsParameters);
 
@@ -684,21 +685,21 @@ io.on('connection', (socket) => {
     // peer_info audio Or video ON
     roomList.get(socket.room_id).getPeers().get(socket.id).updatePeerInfo(data);
     roomList.get(socket.room_id).closeProducer(socket.id, data.producer_id);
-});
+  });
 
-socket.on('resume', async (_, callback) => {
-    await consumer.resume();
-    callback();
-});
+  socket.on('resume', async (_, callback) => {
+      await consumer.resume();
+      callback();
+  });
 
   socket.on('getRoomInfo', (_, cb) => {
-        if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.room_id)) return;
     log.debug('Send Room Info to', getPeerName());
     cb(roomList.get(socket.room_id).toJson());
   });
 
   socket.on('refreshParticipantsCount', () => {
-        if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.room_id)) return;
     let data = {
       room_id: socket.room_id,
       peer_counts: roomList.get(socket.room_id).getPeers().size,
@@ -708,13 +709,22 @@ socket.on('resume', async (_, callback) => {
   });
 
   socket.on('message', (data) => {
-        if (!roomList.has(socket.room_id)) return;
-    log.debug('message', data);
+    if (!roomList.has(socket.room_id)) return;
     if (data.to_peer_id == 'all') {
       roomList.get(socket.room_id).broadCast(socket.id, 'message', data);
     } else {
       roomList.get(socket.room_id).sendTo(data.to_peer_id, 'message', data);
     }
+  });
+
+  socket.on('globalmessage', (data) => {
+    if (!roomList.has(socket.room_id)) return;
+    log.debug('message', data);
+    const sendTo = data.to_peer_id == 'all' ? socket.id : data.to_peer_id;
+
+    roomList.forEach((value, key) => {
+      roomList.get(value.id).broadCast(sendTo, 'globalmessage', data);
+    });
   });
 
   socket.on('disconnect', () => {

@@ -20,6 +20,7 @@ const commands = {
     screenOff: 'stop the screen',
     chatOn: 'open the chat',
     chatSend: 'send',
+    chatSendGlobal: 'global send',
     chatOff: 'close the chat',
     whiteboardOn: 'open the whiteboard',
     whiteboardOff: 'close the whiteboard',
@@ -169,6 +170,10 @@ function execVoiceCommands(transcript) {
         case commands.chatSend:
             printCommand(commands.chatSend);
             chatSendButton.click();
+            break;
+        case commands.chatSendGlobal:
+            printCommand(commands.chatSendGlobal);
+            chatSendGlobalButton.click();
             break;
         case commands.chatOff:
             printCommand(commands.chatOff);

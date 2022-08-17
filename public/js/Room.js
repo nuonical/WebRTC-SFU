@@ -82,6 +82,7 @@ function initClient() {
     setTippy('stopScreenButton', 'Stop screen share', 'right');
     setTippy('swapCameraButton', 'Swap the camera', 'right');
     setTippy('chatButton', 'Toggle the chat', 'right');
+    setTippy('chatTypeToggleButton', 'Toggle the chat type', 'right');
     setTippy('whiteboardButton', 'Toggle the whiteboard', 'right');
     setTippy('settingsButton', 'Toggle the settings', 'right');
     setTippy('exitButton', 'Leave room', 'right');
@@ -108,7 +109,9 @@ function initClient() {
     setTippy('whiteboardCleanBtn', 'Clean', 'top');
     setTippy('participantsRefreshBtn', 'Refresh', 'top');
     setTippy('chatMessage', 'Press enter to send', 'top-start');
+    setTippy('chatMessageGlobal', 'Press enter to send', 'top-start');
     setTippy('chatSendButton', 'Send', 'top');
+    setTippy('chatSendGlobalButton', 'Send', 'top');
     setTippy('chatSpeechStartButton', 'Start speech recognition', 'top');
     setTippy('chatSpeechStopButton', 'Stop speech recognition', 'top');
     setTippy('chatEmojiButton', 'Emoji', 'top');
@@ -600,6 +603,7 @@ function roomIsReady() {
     show(startRecButton);
     show(chatButton);
     show(chatSendButton);
+    show(chatTypeToggleButton);
     show(chatEmojiButton);
     show(chatShareFileButton);
     if (isWebkitSpeechRecognitionSupported) {
@@ -648,11 +652,11 @@ function roomIsReady() {
 
 
 function hide(elem) {
-  elem.className = 'hidden';
+  elem.classList.add('hidden');
 }
 
 function show(elem) {
-  elem.className = '';
+  elem.classList.remove('hidden');
 }
 
 function setColor(elem, color) {
@@ -761,17 +765,31 @@ function handleButtons() {
         rc.toggleChat();
     };
     chatCleanButton.onclick = () => {
+      if(rc.getId('chatGlobalMsger').classList.contains('hidden')) {
         rc.chatClean();
+      } else {
+        rc.chatGlobalClean();
+      }
     };
     chatSaveButton.onclick = () => {
-        rc.chatSave();
+        if(rc.getId('chatGlobalMsger').classList.contains('hidden')) {
+          rc.chatSave();
+        } else {
+          rc.chatGlobalSave();
+        }
     };
     chatCloseButton.onclick = () => {
         rc.toggleChat();
     };
+    chatTypeToggleButton.onclick = () => {
+      rc.toggleChatType();
+  };
     chatSendButton.onclick = () => {
         rc.sendMessage();
     };
+    chatSendGlobalButton.onclick = () => {
+      rc.sendGlobalMessage();
+  };
     chatEmojiButton.onclick = () => {
         rc.toggleChatEmoji();
     };
@@ -980,34 +998,50 @@ function handleSelects() {
 // ####################################################
 
 function handleInputs() {
+  const emojiInputs = {
+    '<3': '\u2764\uFE0F',
+    '</3': '\uD83D\uDC94',
+    ':D': '\uD83D\uDE00',
+    ':)': '\uD83D\uDE03',
+    ';)': '\uD83D\uDE09',
+    ':(': '\uD83D\uDE12',
+    ':p': '\uD83D\uDE1B',
+    ';p': '\uD83D\uDE1C',
+    ":'(": '\uD83D\uDE22',
+    ':+1:': '\uD83D\uDC4D',
+  };
+
+  function handleOnInput() {
+    let chatInputEmoji = emojiInputs;
+
+    for (let i in chatInputEmoji) {
+      let regex = new RegExp(i.replace(/([()[{*+.$^\\|?])/g, '\\$1'), 'gim');
+      this.value = this.value.replace(regex, chatInputEmoji[i]);
+    }
+  }
+
   chatMessage.onkeyup = (e) => {
     if (e.keyCode === 13) {
       e.preventDefault();
       chatSendButton.click();
     }
   };
-  chatMessage.oninput = function () {
-    let chatInputEmoji = {
-      '<3': '\u2764\uFE0F',
-      '</3': '\uD83D\uDC94',
-      ':D': '\uD83D\uDE00',
-      ':)': '\uD83D\uDE03',
-      ';)': '\uD83D\uDE09',
-      ':(': '\uD83D\uDE12',
-      ':p': '\uD83D\uDE1B',
-      ';p': '\uD83D\uDE1C',
-      ":'(": '\uD83D\uDE22',
-      ':+1:': '\uD83D\uDC4D',
-    };
+  chatMessage.oninput = handleOnInput;
 
-    for (let i in chatInputEmoji) {
-      let regex = new RegExp(i.replace(/([()[{*+.$^\\|?])/g, '\\$1'), 'gim');
-      this.value = this.value.replace(regex, chatInputEmoji[i]);
+  chatMessageGlobal.onkeyup = (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      chatSendGlobalButton.click();
     }
   };
+  chatMessageGlobal.oninput = handleOnInput;
 
   rc.getId('chatEmoji').addEventListener('emoji-click', (e) => {
-    chatMessage.value += e.detail.emoji.unicode;
+    if(rc.getId('chatGlobalMsger').classList.contains('hidden')) {
+      chatMessage.value += e.detail.emoji.unicode;
+    } else {
+      chatMessageGlobal.value += e.detail.emoji.unicode;
+    }
     rc.toggleChatEmoji();
   });
 }
@@ -1640,6 +1674,7 @@ async function getParticipantsTable(peers) {
         <td></td>
         <td><button id="sendAllButton" onclick="rc.selectFileToShare('${rc.peer_id}', true)">${_PEER.sendFile}</button></td>
         <td><button id="sendMessageToAll" onclick="rc.sendMessageTo('all')">${_PEER.sendMsg}</button></td>
+        <td><button id="sendGlobalMessage" onclick="rc.sendGlobalMessageTo('all')">${_PEER.sendMsg}</button></td>
         <td><button id="sendVideoToAll" onclick="rc.shareVideo('all');">${_PEER.sendVideo}</button></td>
         <td><button id="ejectAllButton" onclick="rc.peerAction('me','${rc.peer_id}','eject',true,true)">${_PEER.ejectPeer}</button></td>
     </tr>
@@ -1695,6 +1730,7 @@ function setParticipantsTippy(peers) {
     setTippy('hideAllButton', 'Hide all participants', 'top');
     setTippy('sendAllButton', 'Share file to all', 'top');
     setTippy('sendMessageToAll', 'Send message to all', 'top');
+    setTippy('sendGlobalMessage', 'Send global message', 'top');
     setTippy('sendVideoAll', 'Share video mp4 or YouTube to all', 'top');
     setTippy('ejectAllButton', 'Eject all participants', 'top');
     //
