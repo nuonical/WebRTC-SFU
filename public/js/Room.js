@@ -629,7 +629,7 @@ function roomIsReady() {
     show(fileShareButton);
     show(participantsButton);
     show(lockRoomButton);
-    show(aboutButton);
+    typeof aboutButton !== 'undefined' && show(aboutButton);
     handleButtons();
     handleSelects();
     handleInputs();
@@ -910,9 +910,11 @@ function handleButtons() {
     unlockRoomButton.onclick = () => {
         rc.roomAction('unlock');
     };
-    aboutButton.onclick = () => {
+    if(typeof aboutButton !== 'undefined') {
+      aboutButton.onclick = () => {
         showAbout();
-    };
+      };
+    }
 }
 
 // ####################################################
@@ -942,15 +944,17 @@ function handleSelects() {
     }; // cover
     BtnVideoObjectFit.selectedIndex = 2;
 
-    BtnVideoControls.onchange = () => {
-        rc.handleVideoControls(BtnVideoControls.value);
-    };
-    selectTheme.onchange = () => {
-        setTheme(selectTheme.value);
-    };
-    BtnsBarPosition.onchange = () => {
+    typeof BtnVideoControls !== 'undefined' && (BtnVideoControls.onchange = () => {
+      rc.handleVideoControls(BtnVideoControls.value);
+    });
+    
+    typeof selectTheme !== 'undefined' && (selectTheme.onchange = () => {
+      setTheme(selectTheme.value);
+    });
+
+    typeof BtnsBarPosition !== 'undefined' && (BtnsBarPosition.onchange = () => {
         rc.changeBtnsBarPosition(BtnsBarPosition.value);
-    };
+    });
 
     // whiteboard options
     wbDrawingColorEl.onchange = () => {
